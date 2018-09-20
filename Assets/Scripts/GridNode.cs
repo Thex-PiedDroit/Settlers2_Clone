@@ -26,5 +26,9 @@ public class GridNode : MonoBehaviour
 	#endregion
 
 
-
+	public void SetPosInGrid(int iX, int iY)
+	{
+		m_tPosInGrid = new Vector2(iX, iY);
+		transform.position = new Vector3(iX, 0.0f, -iY) * GridManager.s_iUnitSize;
+	}
 }
