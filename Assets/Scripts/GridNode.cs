@@ -21,7 +21,7 @@ public class GridNode : MonoBehaviour
 
 #region Variables (private)
 
-
+	private List<GridNode> m_pNeighboursAsList = null;
 
 	#endregion
 
@@ -30,5 +30,28 @@ public class GridNode : MonoBehaviour
 	{
 		m_tPosInGrid = new Vector2(iX, iY);
 		transform.position = new Vector3(iX, 0.0f, -iY) * GridManager.s_iUnitSize;
+	}
+
+	public List<GridNode> GetNeighboursAsList()
+	{
+		if (m_pNeighboursAsList == null)
+		{
+			m_pNeighboursAsList = new List<GridNode>(6);
+
+			if (m_pWestNode != null)
+				m_pNeighboursAsList.Add(m_pWestNode);
+			if (m_pEastNode != null)
+				m_pNeighboursAsList.Add(m_pEastNode);
+			if (m_pNorthNode != null)
+				m_pNeighboursAsList.Add(m_pNorthNode);
+			if (m_pSouthNode != null)
+				m_pNeighboursAsList.Add(m_pSouthNode);
+			if (m_pNorthWestNode != null)
+				m_pNeighboursAsList.Add(m_pNorthWestNode);
+			if (m_pSouthEastNode != null)
+				m_pNeighboursAsList.Add(m_pSouthEastNode);
+		}
+
+		return m_pNeighboursAsList;
 	}
 }
