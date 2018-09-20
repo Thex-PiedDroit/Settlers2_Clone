@@ -23,6 +23,8 @@ public class GridNode : MonoBehaviour
 
 	private List<GridNode> m_pNeighboursAsList = null;
 
+	private bool m_bFree = true;
+
 	#endregion
 
 
@@ -30,6 +32,16 @@ public class GridNode : MonoBehaviour
 	{
 		m_tPosInGrid = new Vector2(iX, iY);
 		transform.position = new Vector3(iX, 0.0f, -iY) * GridManager.s_iUnitSize;
+	}
+
+	public void SetFree(bool bFree)
+	{
+		m_bFree = bFree;
+	}
+
+	public bool IsFree()
+	{
+		return m_bFree;
 	}
 
 	public List<GridNode> GetNeighboursAsList()

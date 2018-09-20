@@ -88,7 +88,7 @@ static public class Pathfinder
 		{
 			GridNode pCurrentNeighbour = pCurrentNodeNeighbours[i];
 
-			if (FindNodeInList(pCurrentNeighbour, pClosedList) != -1)
+			if (!pCurrentNeighbour.IsFree() || FindNodeInList(pCurrentNeighbour, pClosedList) != -1)
 				continue;
 
 
