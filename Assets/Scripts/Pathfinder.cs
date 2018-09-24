@@ -18,7 +18,7 @@ static public class Pathfinder
 		public PathfinderNode m_pParentNode = null;
 		public GridNode m_pCorrespondingGridNode = null;
 
-		public int m_iDistanceFromStart = 0;
+		public float m_fDistanceFromStart = 0.0f;
 		public int m_iEstimatedDistanceFromDestination = 0;
 
 
@@ -27,16 +27,16 @@ static public class Pathfinder
 			m_pCorrespondingGridNode = pCorrespondingGridNode;
 		}
 
-		public void SetValues(PathfinderNode pParent, int iDistanceFromstart, int iEstimatedDistanceFromDestination)
+		public void SetValues(PathfinderNode pParent, float fDistanceFromstart, int iEstimatedDistanceFromDestination)
 		{
 			m_pParentNode = pParent;
-			m_iDistanceFromStart = iDistanceFromstart;
+			m_fDistanceFromStart = fDistanceFromstart;
 			m_iEstimatedDistanceFromDestination = iEstimatedDistanceFromDestination;
 		}
 
-		public int GetScore()
+		public float GetScore()
 		{
-			return m_iDistanceFromStart + m_iEstimatedDistanceFromDestination;
+			return m_fDistanceFromStart + m_iEstimatedDistanceFromDestination;
 		}
 	}
 
@@ -83,6 +83,8 @@ static public class Pathfinder
 	static private void PopulateOpenListWithNeighbours(PathfinderNode pCurrentNode, GridNode pDestination, ref List<PathfinderNode> pOpenList, List<PathfinderNode> pClosedList)
 	{
 		List<GridNode> pCurrentNodeNeighbours = pCurrentNode.m_pCorrespondingGridNode.GetNeighboursAsList();
+		GridNode pNorthWestNeighbour = pCurrentNode.m_pCorrespondingGridNode.m_pNorthWestNode;
+		GridNode pSouthEastNeighbour = pCurrentNode.m_pCorrespondingGridNode.m_pSouthEastNode;
 
 		for (int i = 0; i < pCurrentNodeNeighbours.Count; ++i)
 		{
@@ -93,7 +95,10 @@ static public class Pathfinder
 
 
 			PathfinderNode pNode = null;
-			int iDistanceFromStartForHere = pCurrentNode.m_iDistanceFromStart + 1;
+			float fDistanceFromStartForHere = pCurrentNode.m_fDistanceFromStart + 1;
+			if (pCurrentNeighbour == pNorthWestNeighbour || pCurrentNeighbour == pSouthEastNeighbour)
+				fDistanceFromStartForHere += 0.5f;	// Thecnically it's the same distance but going diagonally "horizontal" adds a risk of not being able to go diagonally "vertical" later
+
 			int iEstimatedDistanceFromDestinationForHere = GetDistanceBetweenGridNodes(pCurrentNeighbour, pDestination);
 
 			bool bShouldUpdateAttributes = false;
@@ -111,11 +116,11 @@ static public class Pathfinder
 			else
 			{
 				pNode = pOpenList[iIndexInOpenList];
-				bShouldUpdateAttributes = iDistanceFromStartForHere + iEstimatedDistanceFromDestinationForHere < pNode.GetScore();
+				bShouldUpdateAttributes = fDistanceFromStartForHere + iEstimatedDistanceFromDestinationForHere < pNode.GetScore();
 			}
 
 			if (bShouldUpdateAttributes)
-				pNode.SetValues(pCurrentNode, iDistanceFromStartForHere, iEstimatedDistanceFromDestinationForHere);
+				pNode.SetValues(pCurrentNode, fDistanceFromStartForHere, iEstimatedDistanceFromDestinationForHere);
 		}
 	}
 
@@ -123,17 +128,17 @@ static public class Pathfinder
 	{
 		iIndex = 0;
 		PathfinderNode pCheapestNode = pList[0];
-		int iCheapestCost = pCheapestNode.GetScore();
+		float fCheapestCost = pCheapestNode.GetScore();
 
 		for (int i = 1; i < pList.Count; ++i)
 		{
 			PathfinderNode pCurrentNode = pList[i];
-			int iCurrentNodeScore = pCurrentNode.GetScore();
+			float fCurrentNodeScore = pCurrentNode.GetScore();
 
-			if (iCurrentNodeScore < iCheapestCost || (iCurrentNodeScore == iCheapestCost && pCurrentNode.m_iEstimatedDistanceFromDestination < pCheapestNode.m_iEstimatedDistanceFromDestination))
+			if (fCurrentNodeScore < fCheapestCost || (fCurrentNodeScore == fCheapestCost && pCurrentNode.m_iEstimatedDistanceFromDestination < pCheapestNode.m_iEstimatedDistanceFromDestination))
 			{
 				pCheapestNode = pCurrentNode;
-				iCheapestCost = iCurrentNodeScore;
+				fCheapestCost = fCurrentNodeScore;
 
 				iIndex = i;
 			}
@@ -183,6 +188,7 @@ static public class Pathfinder
 		}
 
 		Queue<GridNode> pPath = new Queue<GridNode>(pReversePath.Count);
+
 		for (int i = pReversePath.Count - 1; i >= 0; --i)
 			pPath.Enqueue(pReversePath[i]);
 
