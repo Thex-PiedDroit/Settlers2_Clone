@@ -8,12 +8,12 @@ public class GridNode : MonoBehaviour
 {
 #region Variables (public)
 
-	public GridNode m_pNorthNode = null;
+	public GridNode m_pNorthWestNode = null;
+	public GridNode m_pNorthEastNode = null;
+	public GridNode m_pSouthWestNode = null;
+	public GridNode m_pSouthEastNode = null;
 	public GridNode m_pWestNode = null;
 	public GridNode m_pEastNode = null;
-	public GridNode m_pSouthNode = null;
-	public GridNode m_pNorthWestNode = null;
-	public GridNode m_pSouthEastNode = null;
 
 	public Vector2 m_tPosInGrid = Vector2.zero;
 
@@ -28,10 +28,17 @@ public class GridNode : MonoBehaviour
 	#endregion
 
 
-	public void SetPosInGrid(int iX, int iY)
+	public void SetPosInGrid(int iX, int iY, float fUnitSize, float fGridScaleY)
 	{
 		m_tPosInGrid = new Vector2(iX, iY);
-		transform.position = new Vector3(iX, 0.0f, -iY) * GridManager.s_iUnitSize;
+
+		float fPosX = iX;
+		if (iY % 2 == 1)
+			fPosX += 0.5f;
+
+		float fPosY = -iY * fGridScaleY;
+
+		transform.position = new Vector3(fPosX, 0.0f, fPosY) * fUnitSize;
 	}
 
 	public void SetFree(bool bFree)
@@ -50,18 +57,18 @@ public class GridNode : MonoBehaviour
 		{
 			m_pNeighboursAsList = new List<GridNode>(6);
 
-			if (m_pWestNode != null)
-				m_pNeighboursAsList.Add(m_pWestNode);
-			if (m_pEastNode != null)
-				m_pNeighboursAsList.Add(m_pEastNode);
-			if (m_pNorthNode != null)
-				m_pNeighboursAsList.Add(m_pNorthNode);
-			if (m_pSouthNode != null)
-				m_pNeighboursAsList.Add(m_pSouthNode);
+			if (m_pNorthEastNode != null)
+				m_pNeighboursAsList.Add(m_pNorthEastNode);
+			if (m_pSouthWestNode != null)
+				m_pNeighboursAsList.Add(m_pSouthWestNode);
 			if (m_pNorthWestNode != null)
 				m_pNeighboursAsList.Add(m_pNorthWestNode);
 			if (m_pSouthEastNode != null)
 				m_pNeighboursAsList.Add(m_pSouthEastNode);
+			if (m_pWestNode != null)
+				m_pNeighboursAsList.Add(m_pWestNode);
+			if (m_pEastNode != null)
+				m_pNeighboursAsList.Add(m_pEastNode);
 		}
 
 		return m_pNeighboursAsList;

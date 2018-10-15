@@ -45,10 +45,8 @@ static public class Pathfinder
 
 	static public Queue<GridNode> GetPathToDestination(GridNode pDestination, GridNode pFromNode)
 	{
-		int iMinDistance = GetDistanceBetweenGridNodes(pFromNode, pDestination);
-
-		List<PathfinderNode> pOpenList = new List<PathfinderNode>(iMinDistance);
-		List<PathfinderNode> pClosedList = new List<PathfinderNode>(iMinDistance);
+		List<PathfinderNode> pOpenList = new List<PathfinderNode>();
+		List<PathfinderNode> pClosedList = new List<PathfinderNode>();
 
 		pOpenList.Add(new PathfinderNode(pFromNode));
 
@@ -83,8 +81,8 @@ static public class Pathfinder
 	static private void PopulateOpenListWithNeighbours(PathfinderNode pCurrentNode, GridNode pDestination, ref List<PathfinderNode> pOpenList, List<PathfinderNode> pClosedList)
 	{
 		List<GridNode> pCurrentNodeNeighbours = pCurrentNode.m_pCorrespondingGridNode.GetNeighboursAsList();
-		GridNode pNorthWestNeighbour = pCurrentNode.m_pCorrespondingGridNode.m_pNorthWestNode;
-		GridNode pSouthEastNeighbour = pCurrentNode.m_pCorrespondingGridNode.m_pSouthEastNode;
+		GridNode pWestNode = pCurrentNode.m_pCorrespondingGridNode.m_pWestNode;
+		GridNode pEastNode = pCurrentNode.m_pCorrespondingGridNode.m_pEastNode;
 
 		for (int i = 0; i < pCurrentNodeNeighbours.Count; ++i)
 		{
@@ -95,9 +93,9 @@ static public class Pathfinder
 
 
 			PathfinderNode pNode = null;
-			float fDistanceFromStartForHere = pCurrentNode.m_fDistanceFromStart + 1;
-			if (pCurrentNeighbour == pNorthWestNeighbour || pCurrentNeighbour == pSouthEastNeighbour)
-				fDistanceFromStartForHere += 0.5f;	// Thecnically it's the same distance but going diagonally "horizontal" adds a risk of not being able to go diagonally "vertical" later
+			float fDistanceFromStartForHere = pCurrentNode.m_fDistanceFromStart + 1.0f;
+			if (pCurrentNeighbour == pWestNode || pCurrentNeighbour == pEastNode)
+				fDistanceFromStartForHere += 0.5f;			// While this is not technically true, this is to account for the possible backtracking that a horizontal movement might occur later down the path
 
 			int iEstimatedDistanceFromDestinationForHere = GetDistanceBetweenGridNodes(pCurrentNeighbour, pDestination);
 
@@ -160,18 +158,29 @@ static public class Pathfinder
 
 	static public int GetDistanceBetweenGridNodes(GridNode pFrom, GridNode pTo)
 	{
-		Vector2 tDifference = pTo.m_tPosInGrid - pFrom.m_tPosInGrid;
-		float fX = tDifference.x;
-		float fY = tDifference.y;
-		float fAbsX = Mathf.Abs(fX);
-		float fAbsY = Mathf.Abs(fY);
+		Vector2 tFromPos = pFrom.m_tPosInGrid;
+		Vector2 tToPos = pTo.m_tPosInGrid;
+		Vector2 tDifference = tToPos - tFromPos;
 
-		int iDistance = (int)Mathf.Abs(fX + fY);
+		bool bGoingRight = tDifference.x >= 0.0f;
 
-		if (Mathf.Sign(fX) != Mathf.Sign(fY))
-			iDistance += (int)(Mathf.Min(fAbsX, fAbsY));	// This takes in account the fact that we can move diagonally "horizontally"
+		tDifference.x = Mathf.Abs(tDifference.x);
+		tDifference.y = Mathf.Abs(tDifference.y);
 
-		return iDistance;
+		int iLongestPathPossible = (int)(tDifference.x + tDifference.y);
+
+		int iShortcutsCount = (int)(tDifference.y) / 2;
+		if (tDifference.y % 2 == 1)
+		{
+			bool bStartsOnOddRow = tFromPos.y % 2 == 1;
+
+			if (!(bGoingRight ^ bStartsOnOddRow))	// If both are true or both are false
+				++iShortcutsCount;
+		}
+
+		iShortcutsCount = Mathf.Min(iShortcutsCount, (int)(tDifference.x));		// Can't take more shortcuts than horizontally possible
+
+		return iLongestPathPossible - iShortcutsCount;
 	}
 
 	static private Queue<GridNode> RetracePathFromEnd(List<PathfinderNode> pClosedList, GridNode pStart)
